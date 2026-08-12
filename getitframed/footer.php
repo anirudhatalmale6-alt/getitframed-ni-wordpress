@@ -77,7 +77,11 @@ $gif_trade_link      = gif_page_url( 'trade' );
 		</div>
 
 		<div class="footer-bottom">
-			&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( get_bloginfo( 'name' ) ); ?>. <?php esc_html_e( 'All rights reserved.', 'getitframed' ); ?>
+			&copy; <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php echo esc_html( get_bloginfo( 'name' ) ); ?>. <?php esc_html_e( 'All rights reserved.', 'getitframed' ); ?>
+			<span class="footer-credit">
+				<?php esc_html_e( 'Designed by', 'getitframed' ); ?>
+				<a href="https://smilecreative.agency" rel="noopener">Smile Creative</a>
+			</span>
 		</div>
 	</div>
 </footer>
