@@ -290,8 +290,11 @@ footer a:hover { color: var(--rose); }
     text-align: center; padding-top: 1.5rem; margin-top: 1.5rem;
     font-size: 0.72rem; color: rgba(255,255,255,0.35);
 }
+.footer-services--split { column-count: 2; column-gap: 1.5rem; }
+.footer-services--split a { break-inside: avoid; }
+@media (max-width: 560px) { .footer-services--split { column-count: 1; } }
 .footer-credit { display: block; margin-top: 0.4rem; }
-.footer-credit a { color: rgba(255,255,255,0.55); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
+.footer-credit a { display: inline; color: rgba(255,255,255,0.55); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
 .footer-credit a:hover { color: #fff; border-bottom-color: rgba(255,255,255,0.6); }
 .contact-label {
     display: block; font-size: 0.68rem; color: rgba(255,255,255,0.4);

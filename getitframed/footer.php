@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$gif_footer_services = gif_services( 6 );
+$gif_footer_services = gif_services();
 $gif_contact_link    = gif_page_url( 'contact' );
 $gif_about_link      = gif_page_url( 'about' );
 $gif_gallery_link    = gif_has_gallery() ? get_post_type_archive_link( 'gif_gallery' ) : false;
@@ -53,9 +53,11 @@ $gif_trade_link      = gif_page_url( 'trade' );
 
 			<div>
 				<h4><?php esc_html_e( 'Services', 'getitframed' ); ?></h4>
-				<?php foreach ( $gif_footer_services as $gif_footer_service ) : ?>
-					<a href="<?php echo esc_url( get_permalink( $gif_footer_service ) ); ?>"><?php echo esc_html( get_the_title( $gif_footer_service ) ); ?></a>
-				<?php endforeach; ?>
+				<div class="footer-services<?php echo count( $gif_footer_services ) > 6 ? ' footer-services--split' : ''; ?>">
+					<?php foreach ( $gif_footer_services as $gif_footer_service ) : ?>
+						<a href="<?php echo esc_url( get_permalink( $gif_footer_service ) ); ?>"><?php echo esc_html( get_the_title( $gif_footer_service ) ); ?></a>
+					<?php endforeach; ?>
+				</div>
 			</div>
 
 			<div>

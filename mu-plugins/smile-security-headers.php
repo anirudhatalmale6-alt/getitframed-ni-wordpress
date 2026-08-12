@@ -36,7 +36,15 @@ function smile_security_headers() {
 	);
 
 	if ( is_ssl() ) {
-		$headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
+		// includeSubDomains is opt-in on purpose. Sent from an apex domain it
+		// binds EVERY subdomain to https, including staging and preview ones
+		// that might not have a certificate yet, and it cannot be taken back
+		// for a year. Define SMILE_HSTS_SUBDOMAINS true once you are sure.
+		$hsts = 'max-age=31536000';
+		if ( defined( 'SMILE_HSTS_SUBDOMAINS' ) && SMILE_HSTS_SUBDOMAINS ) {
+			$hsts .= '; includeSubDomains';
+		}
+		$headers['Strict-Transport-Security'] = $hsts;
 	}
 
 	/**
@@ -60,7 +68,7 @@ function smile_security_headers_admin( $headers ) {
 	$headers['X-Frame-Options']        = 'SAMEORIGIN';
 	$headers['Referrer-Policy']        = 'strict-origin-when-cross-origin';
 	if ( is_ssl() ) {
-		$headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
+		$headers['Strict-Transport-Security'] = 'max-age=31536000';
 	}
 	return $headers;
 }
@@ -92,6 +100,45 @@ add_filter(
 		unset( $headers['X-Pingback'] );
 		return $headers;
 	}
+);
+
+/**
+ * Username enumeration.
+ *
+ * Two routes give away every username on the site to anyone who asks, and
+ * a username is half of a brute-force attempt:
+ *   /wp-json/wp/v2/users   — the REST endpoint, open by default
+ *   /?author=1             — redirects to /author/<username>/
+ *
+ * Nothing we build has public author pages, so both are closed. If a site
+ * genuinely needs author archives, define SMILE_ALLOW_AUTHOR_ARCHIVES true.
+ */
+add_filter(
+	'rest_endpoints',
+	function ( $endpoints ) {
+		if ( is_user_logged_in() ) {
+			return $endpoints;
+		}
+		unset( $endpoints['/wp/v2/users'] );
+		unset( $endpoints['/wp/v2/users/(?P<id>[\d]+)'] );
+		return $endpoints;
+	}
+);
+
+add_action(
+	'template_redirect',
+	function () {
+		if ( defined( 'SMILE_ALLOW_AUTHOR_ARCHIVES' ) && SMILE_ALLOW_AUTHOR_ARCHIVES ) {
+			return;
+		}
+		if ( is_author() || isset( $_GET['author'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			global $wp_query;
+			$wp_query->set_404();
+			status_header( 404 );
+			nocache_headers();
+		}
+	},
+	1
 );
 
 /**

@@ -250,6 +250,24 @@ add_action( 'wp_head', 'gif_schema_inner', 12 );
 function gif_front_canonical() {
 	if ( is_front_page() ) {
 		printf( "<link rel=\"canonical\" href=\"%s\">\n", esc_url( home_url( '/' ) ) );
+		return;
+	}
+
+	// Archives get none from core either, so /services/ and /gallery/ were
+	// shipping without one.
+	$url = '';
+	if ( is_post_type_archive() ) {
+		$url = get_post_type_archive_link( get_query_var( 'post_type' ) );
+	} elseif ( is_tax() ) {
+		$term = get_queried_object();
+		if ( $term && ! is_wp_error( $term ) ) {
+			$link = get_term_link( $term );
+			$url  = is_wp_error( $link ) ? '' : $link;
+		}
+	}
+
+	if ( $url ) {
+		printf( "<link rel=\"canonical\" href=\"%s\">\n", esc_url( $url ) );
 	}
 }
 add_action( 'wp_head', 'gif_front_canonical', 6 );
