@@ -9,7 +9,10 @@
  * Usage: php gif-seed.php
  */
 
-if ( 'cli' !== php_sapi_name() ) {
+// CLI is the normal way to run this. Some shared hosts have no shell at all, so
+// gif-deploy.php may run it over HTTP instead — but only after it has checked
+// its own one-time token.
+if ( 'cli' !== php_sapi_name() && ! defined( 'GIF_SEED_ALLOW_WEB' ) ) {
 	exit( "CLI only\n" );
 }
 
@@ -22,6 +25,32 @@ echo "Seeding Get It Framed NI...\n";
 
 // -- Theme and basic settings ------------------------------------------------
 switch_theme( 'getitframed' );
+
+/*
+ * switch_theme() changes the options, but it does NOT load the new theme's
+ * functions.php in the request that called it — WordPress loaded the OLD
+ * theme's before this script ever ran. So on a fresh install, where the active
+ * theme is still Twenty Twenty-Five, nothing below this line would exist:
+ * the post types would be unregistered, and gif_setup() would never have added
+ * the gif-card / gif-service-hero / gif-gallery image sizes, so every seeded
+ * image would be generated without the crops the design depends on.
+ *
+ * Load it by hand and run the setup callback directly. after_setup_theme and
+ * init have both already fired, so hooking is no use; the calls below are all
+ * idempotent, so this is safe when the theme is already active.
+ */
+require_once get_theme_root() . '/getitframed/functions.php';
+if ( function_exists( 'gif_setup' ) ) {
+	// Registering theme support this late is what a seeder has to do, and
+	// WordPress rightly complains about it. Silence that one notice rather
+	// than print a scary "called incorrectly" warning at deployment.
+	add_filter( 'doing_it_wrong_trigger_error', '__return_false' );
+	gif_setup();
+	remove_filter( 'doing_it_wrong_trigger_error', '__return_false' );
+}
+if ( function_exists( 'gif_register_post_types' ) ) {
+	gif_register_post_types();
+}
 update_option( 'blogname', 'Get It Framed NI' );
 update_option( 'blogdescription', 'Professional Print & Framing Services' );
 update_option( 'permalink_structure', '/%postname%/' );
