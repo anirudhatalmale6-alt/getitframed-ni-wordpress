@@ -1,2 +1,4 @@
-*.log
-.DS_Store
+# Site-specific mail credentials — never commit these.
+mu-plugins/smile-smtp-config.php
+wp-content/mu-plugins/smile-smtp-config.php
+*-credentials.php
