@@ -110,7 +110,50 @@ foreach ( $comments as $comment ) {
 	wp_delete_comment( $comment->comment_ID, true );
 }
 
-// -- 5. Report ---------------------------------------------------------------
+// -- 5. Pretty permalinks need the rewrite rules on disk ----------------------
+// The seeder sets the permalink structure, but the rules only reach .htaccess if
+// that file is writable. If it is not, every page except the front page 404s -
+// which looks like a broken deployment and is really a file permission.
+echo "\nRewrite rules:\n";
+
+global $wp_rewrite;
+
+require_once ABSPATH . 'wp-admin/includes/misc.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+
+$htaccess = get_home_path() . '.htaccess';
+$writable = ( file_exists( $htaccess ) && is_writable( $htaccess ) )
+	|| ( ! file_exists( $htaccess ) && is_writable( get_home_path() ) );
+
+/*
+ * save_mod_rewrite_rules() writes nothing at all when got_mod_rewrite() is
+ * false, and returns without complaint either way. Reporting "written" on the
+ * strength of having called it is how you end up telling a client the deploy
+ * succeeded while every page but the front page 404s. Read the file back.
+ */
+$written = false;
+if ( $writable && function_exists( 'save_mod_rewrite_rules' ) ) {
+	save_mod_rewrite_rules();
+	clearstatcache( true, $htaccess );
+	$written = file_exists( $htaccess )
+		&& false !== strpos( (string) file_get_contents( $htaccess ), 'BEGIN WordPress' );
+}
+
+if ( $written ) {
+	echo "  written to {$htaccess}, and read back to confirm\n";
+} else {
+	echo "  NOT WRITTEN to {$htaccess}\n";
+	printf(
+		"  (writable: %s, mod_rewrite detected: %s)\n",
+		$writable ? 'yes' : 'no',
+		got_mod_rewrite() ? 'yes' : 'no'
+	);
+	echo "  Every page except the front page will 404 until these lines are in it:\n\n";
+	echo $wp_rewrite->mod_rewrite_rules(); // phpcs:ignore WordPress.Security.EscapeOutput
+	echo "\n";
+}
+
+// -- 6. Report ---------------------------------------------------------------
 echo "\nResult:\n";
 printf( "  services published : %d\n", (int) wp_count_posts( 'gif_service' )->publish );
 printf( "  pages published    : %d\n", (int) wp_count_posts( 'page' )->publish );
@@ -120,7 +163,7 @@ printf( "  active theme       : %s\n", get_option( 'stylesheet' ) );
 printf( "  permalinks         : %s\n", get_option( 'permalink_structure' ) ? get_option( 'permalink_structure' ) : 'PLAIN — set them in Settings > Permalinks' );
 printf( "  front page         : %s\n", 'page' === get_option( 'show_on_front' ) ? get_the_title( (int) get_option( 'page_on_front' ) ) : 'latest posts' );
 
-// -- 6. Take this file away ---------------------------------------------------
+// -- 7. Take this file away ---------------------------------------------------
 $gone = @unlink( __FILE__ ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
 echo "\n" . ( $gone
 	? "This deployment file has deleted itself.\n"

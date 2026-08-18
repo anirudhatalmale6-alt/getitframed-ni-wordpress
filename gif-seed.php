@@ -27,6 +27,24 @@ echo "Seeding Get It Framed NI...\n";
 switch_theme( 'getitframed' );
 
 /*
+ * Permalinks FIRST, before the post types are registered below.
+ *
+ * Not update_option(): WP_Rewrite read the permalink structure into itself when
+ * WordPress booted, and writing the option behind its back leaves the object
+ * holding the old empty value, so the flush at the end of this script generates
+ * no .htaccess rules at all.
+ *
+ * And it has to happen before registration, because set_permalink_structure()
+ * calls WP_Rewrite::init(), which RESETS the object — including the extra
+ * permastructs that register_post_type() adds. Set the structure after
+ * registering and the services and gallery rules are silently wiped: the site
+ * comes up with 95 rewrite rules and not one of them for a custom post type,
+ * so the home and page URLs work and every service and the gallery 404.
+ */
+global $wp_rewrite;
+$wp_rewrite->set_permalink_structure( '/%postname%/' );
+
+/*
  * switch_theme() changes the options, but it does NOT load the new theme's
  * functions.php in the request that called it — WordPress loaded the OLD
  * theme's before this script ever ran. So on a fresh install, where the active
@@ -53,7 +71,7 @@ if ( function_exists( 'gif_register_post_types' ) ) {
 }
 update_option( 'blogname', 'Get It Framed NI' );
 update_option( 'blogdescription', 'Professional Print & Framing Services' );
-update_option( 'permalink_structure', '/%postname%/' );
+// Permalink structure is set above, before the post types are registered.
 update_option( 'timezone_string', 'Europe/London' );
 update_option( 'date_format', 'j F Y' );
 update_option( 'start_of_week', 1 );
