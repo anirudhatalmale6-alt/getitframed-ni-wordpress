@@ -64,12 +64,30 @@ if ( ! $gif_gallery_url || ! gif_has_gallery() ) {
 <header>
 	<div class="container nav-wrapper">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="brand" rel="home">
-			<?php if ( has_custom_logo() ) : ?>
-				<?php the_custom_logo(); ?>
-			<?php else : ?>
+			<?php
+			// the_custom_logo() prints its own <a>. Nesting that inside .brand is
+			// invalid HTML: the parser closes .brand early, so the logo ends up a
+			// SIBLING of .brand rather than a child. .brand img then matches nothing,
+			// the logo renders at its natural size and sits adrift of the left edge.
+			// Print the image on its own instead and keep the single wrapping link.
+			$gif_logo_id = (int) get_theme_mod( 'custom_logo' );
+			if ( $gif_logo_id && wp_attachment_is_image( $gif_logo_id ) ) {
+				echo wp_get_attachment_image(
+					$gif_logo_id,
+					'full',
+					false,
+					array(
+						'class' => 'custom-logo',
+						'alt'   => esc_attr( get_bloginfo( 'name' ) ),
+					)
+				);
+			} else {
+				?>
 				<img src="<?php echo esc_url( GIF_URI . '/assets/img/logo.png' ); ?>"
 					alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="216" height="106">
-			<?php endif; ?>
+				<?php
+			}
+			?>
 		</a>
 
 		<nav id="mainNav" aria-label="<?php esc_attr_e( 'Main menu', 'getitframed' ); ?>">

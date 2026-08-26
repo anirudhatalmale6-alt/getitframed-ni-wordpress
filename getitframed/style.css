@@ -3,7 +3,7 @@ Theme Name: Get It Framed NI
 Theme URI: https://getitframedni.co.uk
 Author: Smile Creative
 Description: Bespoke theme for Get It Framed NI, converted from the approved HTML design prototype. No page builder, no premium dependencies.
-Version: 1.0.0
+Version: 1.0.1
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -62,7 +62,9 @@ header {
     position: sticky; top: 0; z-index: 1000;
 }
 .nav-wrapper { display: flex; justify-content: space-between; align-items: center; }
-.brand img { height: 68px; width: auto; }
+/* The logo carries four lines of type (name, services, two phone numbers), so it
+   needs a little more height than a wordmark would to stay legible. */
+.brand img { height: 84px; width: auto; display: block; }
 nav { display: flex; align-items: center; gap: 0.5rem; }
 nav a {
     text-decoration: none; color: var(--ink-deep);
@@ -316,9 +318,12 @@ footer a:hover { color: var(--rose); }
     .top-bar-right { display: none; }
     nav { display: none; }
     .mobile-toggle { display: block; }
+    .brand img { height: 62px; }
     nav.open {
+        /* Was a hard-coded 80px, which assumed a fixed header height and would
+           overlap the header the moment the logo changed size. */
         display: flex; flex-direction: column; position: absolute;
-        top: 80px; left: 0; right: 0; background: var(--white);
+        top: 100%; left: 0; right: 0; background: var(--white);
         border-bottom: 2px solid var(--teal); padding: 16px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 999;
     }
