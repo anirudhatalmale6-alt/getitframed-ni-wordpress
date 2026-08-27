@@ -3,7 +3,7 @@ Theme Name: Get It Framed NI
 Theme URI: https://getitframedni.co.uk
 Author: Smile Creative
 Description: Bespoke theme for Get It Framed NI, converted from the approved HTML design prototype. No page builder, no premium dependencies.
-Version: 1.0.2
+Version: 1.0.3
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -72,7 +72,17 @@ nav a {
     text-transform: uppercase; letter-spacing: 1.5px; transition: 0.3s;
 }
 nav a:hover { color: var(--teal); }
-.nav-dropdown { position: relative; }
+/* "About" and "Get in Touch" are anchors sitting directly in the flex nav, so
+   their 8px vertical padding builds a 36px box and the text centres in it.
+   "Services" is wrapped in .nav-dropdown, which was a plain block. Two things
+   followed: the div's height came from its OWN inherited 27px line-height rather
+   than from the link, and the link inside it stayed `display: inline`, where
+   vertical padding is painted but adds nothing to the line box. The result was
+   the word Services rendering 1.6px lower than its neighbours.
+   Laying the wrapper out the way its siblings are laid out removes the
+   difference at source, rather than nudging it back with a margin. */
+.nav-dropdown { position: relative; display: flex; align-items: center; }
+.nav-dropdown > a { display: block; }
 .nav-dropdown > a::after { content: ' \25BE'; font-size: 0.6em; }
 .dropdown-menu {
     display: none; position: absolute; top: 100%; left: 0;
@@ -327,7 +337,9 @@ footer a:hover { color: var(--rose); }
         border-bottom: 2px solid var(--teal); padding: 16px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 999;
     }
-    .nav-dropdown { position: static; }
+    /* Back to a block here: on mobile .dropdown-menu is in normal flow, and a
+       flex wrapper would sit it BESIDE the Services link instead of under it. */
+    .nav-dropdown { position: static; display: block; }
     .dropdown-menu {
         position: static; box-shadow: none; border-top: none;
         padding: 0 0 0 1rem; min-width: auto; display: none;
