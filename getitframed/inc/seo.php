@@ -75,6 +75,27 @@ function gif_head_meta() {
 add_action( 'wp_head', 'gif_head_meta', 5 );
 
 /**
+ * The logo the site is currently displaying.
+ *
+ * Prefers the Customizer logo, which is what the header renders, and falls back
+ * to the file bundled with the theme. Google reads `logo` off the LocalBusiness
+ * block for the business's mark, so it has to follow the header rather than be
+ * pinned to whatever shipped with the theme.
+ *
+ * @return string
+ */
+function gif_site_logo_url() {
+	$id = (int) get_theme_mod( 'custom_logo' );
+	if ( $id && wp_attachment_is_image( $id ) ) {
+		$src = wp_get_attachment_image_src( $id, 'full' );
+		if ( ! empty( $src[0] ) ) {
+			return $src[0];
+		}
+	}
+	return GIF_URI . '/assets/img/logo.png';
+}
+
+/**
  * LocalBusiness structured data, built from the Customizer values so it can
  * never drift out of step with what the page says.
  */
@@ -93,7 +114,10 @@ function gif_schema() {
 		'description' => gif_opt( 'seo_description' ),
 		'url'         => home_url( '/' ),
 		'image'       => gif_image_url( 'gif_hero_image', 'hero.webp', 'full' ),
-		'logo'        => GIF_URI . '/assets/img/logo.png',
+		// Whatever logo the site is ACTUALLY wearing. Hardcoding the bundled file
+		// meant that changing the logo in the Customizer left Google reading the
+		// old one -- the header showed one mark and the structured data another.
+		'logo'        => gif_site_logo_url(),
 		'address'     => array(
 			'@type'           => 'PostalAddress',
 			'streetAddress'   => gif_opt( 'address_line1' ),
