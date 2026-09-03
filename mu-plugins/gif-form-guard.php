@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Get It Framed — Contact Form Guard
  * Description: The content-filter layer of the Smile Creative anti-spam standard, adapted to the site's own contact form. Adds language, URL, disposable-domain, keyword and bot-name checks on top of the honeypot, timing and rate limit already in the theme.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Smile Creative
  *
  * WHY THIS EXISTS
@@ -225,6 +225,77 @@ function gif_guard_content_reason( $f ) {
 	if ( '' !== $name && ! preg_match( '/\s/', $name ) && strlen( $name ) > 12 ) {
 		return 'bot-name';
 	}
+
+	/*
+	 * An unsolicited pitch for SEO or marketing services.
+	 *
+	 * This is the rule that matters here. The three real examples from the studio's
+	 * inbox were polite, correctly spelled, signed with a plausible name, sent from a
+	 * gmail address, contained no links in two cases out of three, and were typed
+	 * slowly enough to clear every timing check. Nothing about their SHAPE says bot.
+	 * What gives them away is the subject: all three are selling search rankings to
+	 * the business.
+	 *
+	 * A customer of a framing studio wants a picture framed. They do not write about
+	 * keyword rankings, meta tags or organic growth. So the topic is the signal.
+	 *
+	 * ⚠ TWO phrases are required, not one, and the list avoids bare "google" -- "I
+	 * found you on Google" is how a real customer opens.
+	 *
+	 * ⚠ DO NOT put this rule on a site whose clients legitimately talk about SEO -- a
+	 * marketing agency, a web business. Both the list and the threshold are
+	 * filterable so it can be softened or emptied per site.
+	 */
+	$pitch = apply_filters(
+		'gif_guard_pitch_phrases',
+		array(
+			'seo', 'search engine optimi', 'google ranking', 'keyword ranking',
+			'serps', 'backlink', 'link building', 'guest post', 'domain authority',
+			'organic growth', 'organic traffic', 'organic ranking', 'high-intent traffic',
+			'meta tags', 'page speed', 'indexing issue', 'google visibility',
+			'first page of google', 'rank higher', 'web traffic', 'digital marketing',
+			'boost your ranking', 'improve your ranking', 'website audit',
+			'increase your sales', 'grow your business online',
+		)
+	);
+
+	$pitch_hits = 0;
+	foreach ( $pitch as $phrase ) {
+		// "seo" needs word boundaries or it matches inside ordinary words.
+		$found = ( 'seo' === $phrase )
+			? (bool) preg_match( '/\bseo\b/i', $all_text )
+			: ( false !== strpos( $all_text, $phrase ) );
+		if ( $found ) {
+			$pitch_hits++;
+		}
+	}
+
+	if ( $pitch_hits >= (int) apply_filters( 'gif_guard_pitch_threshold', 2 ) ) {
+		return 'sales-pitch-' . $pitch_hits;
+	}
+
+	/*
+	 * A "bulk-signup shape" rule was written here and then DELETED. Recording why,
+	 * so nobody adds it back.
+	 *
+	 * It fired when the mailbox had a run of four or more digits AND the phone number
+	 * could not be a UK one -- meant as an independent net for a future campaign that
+	 * is not about SEO. Both halves were required, which felt cautious enough.
+	 *
+	 * In testing it blocked this, which is a customer:
+	 *
+	 *     Pat Devlin, patdevlin2004@gmail.com, phone "2563 1234"
+	 *     "Wondering what you would charge to print and mount six A3 photographs
+	 *      from a wedding. No rush on them at all."
+	 *
+	 * A birth year in a gmail address and a local number typed without the area code.
+	 * Utterly ordinary in Ballymena. And it caught nothing the sales-pitch rule had
+	 * not already caught, so it was pure cost.
+	 *
+	 * The lesson worth keeping: a rule justified by a campaign that has not happened
+	 * yet cannot be tested against anything, so its false positives are the only real
+	 * thing about it. Wait for the samples, then write the rule.
+	 */
 
 	return '';
 }
