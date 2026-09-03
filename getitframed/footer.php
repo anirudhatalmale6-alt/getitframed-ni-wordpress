@@ -74,7 +74,7 @@ $gif_trade_link      = gif_page_url( 'trade' );
 					<?php endif; ?>
 				</p>
 				<span class="contact-label"><?php esc_html_e( 'Email', 'getitframed' ); ?></span>
-				<p class="contact-val" style="font-size: 0.85rem;"><?php echo esc_html( antispambot( gif_opt( 'email' ) ) ); ?></p>
+				<p class="contact-val" style="font-size: 0.85rem;"><?php echo gif_email_html( '', false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?></p>
 			</div>
 		</div>
 

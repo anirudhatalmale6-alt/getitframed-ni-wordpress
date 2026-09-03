@@ -284,3 +284,71 @@ function gif_gallery_terms() {
 
 	return is_wp_error( $terms ) ? array() : $terms;
 }
+
+/**
+ * Point the no-JavaScript fallback at the enquiry form, not just the page.
+ *
+ * Without this, someone with JavaScript off who is already ON the contact page
+ * clicks "Email us" and reloads the page they are standing on. Not fatal --
+ * the form is right there -- but it is a dead click, and a dead click is
+ * exactly the failure this whole approach exists to avoid.
+ *
+ * @param string $url Fallback URL from the email guard.
+ * @return string
+ */
+function gif_email_fallback_url( $url ) {
+	return $url . '#enquiry';
+}
+add_filter( 'smile_email_fallback_url', 'gif_email_fallback_url' );
+
+/**
+ * The studio email address, protected from harvesters.
+ *
+ * Why this exists as a wrapper rather than a direct call:
+ *
+ * The Smile Creative email guard (mu-plugins/smile-email-guard.php) filters
+ * the_content and widget_text. Every address on this site is printed by a
+ * theme template instead, so installing the guard on its own protected
+ * nothing at all -- the decoder loaded into the footer and found no addresses
+ * to decode, while the theme carried on publishing them. Checked on the live
+ * contact page: decoder present, zero protected spans.
+ *
+ * function_exists() is deliberate. If the mu-plugin is ever removed the theme
+ * must not fatal, and it must not silently print nothing either -- it falls
+ * back to what it did before, which is weak but is a working address.
+ *
+ * @param string $text  Optional link text. Empty means show the address.
+ * @param bool   $link  Whether to render as a mailto: link.
+ * @param array  $attrs Optional extra attributes.
+ * @return string Ready-to-echo HTML.
+ */
+function gif_email_html( $text = '', $link = true, $attrs = array() ) {
+	$address = (string) gif_opt( 'email' );
+	if ( '' === $address ) {
+		return '';
+	}
+
+	if ( function_exists( 'smile_email_link' ) ) {
+		return smile_email_link( $address, $text, $attrs );
+	}
+
+	// Fallback: WordPress core entity encoding. Weaker -- any harvester that
+	// HTML-decodes before matching reads straight through it -- but a real,
+	// clickable address is better than a blank space.
+	$safe = antispambot( $address );
+	if ( ! $link ) {
+		return esc_html( $safe );
+	}
+
+	$extra = '';
+	foreach ( $attrs as $k => $v ) {
+		$extra .= sprintf( ' %s="%s"', esc_attr( $k ), esc_attr( $v ) );
+	}
+
+	return sprintf(
+		'<a href="mailto:%1$s"%2$s>%3$s</a>',
+		esc_attr( $safe ),
+		$extra,
+		esc_html( '' === $text ? $safe : $text )
+	);
+}

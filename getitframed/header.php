@@ -54,7 +54,7 @@ if ( ! $gif_gallery_url || ! gif_has_gallery() ) {
 					/ <a href="tel:<?php echo esc_attr( gif_tel( gif_opt( 'phone_mobile' ) ) ); ?>"><?php echo esc_html( gif_opt( 'phone_mobile' ) ); ?></a>
 				<?php endif; ?>
 			</span>
-			<span>&#9993; <a href="mailto:<?php echo esc_attr( antispambot( gif_opt( 'email' ) ) ); ?>"><?php esc_html_e( 'Email Us', 'getitframed' ); ?></a></span>
+			<span>&#9993; <?php echo gif_email_html( __( 'Email Us', 'getitframed' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?></span>
 			<span>&#9906; <?php echo esc_html( gif_opt( 'topbar_location' ) ); ?></span>
 		</div>
 		<div class="top-bar-right"><?php echo esc_html( gif_opt( 'topbar_tagline' ) ); ?></div>

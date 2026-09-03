@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<div class="location-detail">
 					<span class="detail-label"><?php esc_html_e( 'Email', 'getitframed' ); ?></span>
-					<p><a href="mailto:<?php echo esc_attr( antispambot( gif_opt( 'email' ) ) ); ?>"><?php echo esc_html( antispambot( gif_opt( 'email' ) ) ); ?></a></p>
+					<p><?php echo gif_email_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?></p>
 				</div>
 
 				<?php if ( gif_opt( 'hours' ) ) : ?>

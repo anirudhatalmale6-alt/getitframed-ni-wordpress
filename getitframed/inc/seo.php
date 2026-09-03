@@ -133,8 +133,22 @@ function gif_schema() {
 		$schema['telephone'] = $phone;
 	}
 
+	/*
+	 * The one place the address is still published in plain text.
+	 *
+	 * This is deliberate, not an oversight. Google reads LocalBusiness schema
+	 * and it is how contact details reach the business panel in search
+	 * results. Every other address on the site is now encoded; a harvester
+	 * that parses JSON-LD will still find this one.
+	 *
+	 * It is a genuine trade -- a real SEO asset against a harvester that
+	 * bothers to read structured data -- so it is the client's call, not a
+	 * default. Drop this in a plugin or child theme to remove it:
+	 *
+	 *     add_filter( 'gif_schema_email', '__return_false' );
+	 */
 	$email = gif_opt( 'email' );
-	if ( is_email( $email ) ) {
+	if ( is_email( $email ) && apply_filters( 'gif_schema_email', true, $email ) ) {
 		$schema['email'] = $email;
 	}
 
