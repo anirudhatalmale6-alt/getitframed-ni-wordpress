@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GIF_VERSION', '1.0.3' );
+define( 'GIF_VERSION', '1.0.4' );
 define( 'GIF_DIR', get_template_directory() );
 define( 'GIF_URI', get_template_directory_uri() );
 

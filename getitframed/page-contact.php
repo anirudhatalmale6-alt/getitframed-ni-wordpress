@@ -57,7 +57,15 @@ while ( have_posts() ) :
 						<input type="hidden" name="gif_loaded" value="<?php echo esc_attr( time() ); ?>">
 						<input type="hidden" name="gif_redirect" value="<?php echo esc_url( get_permalink() ); ?>">
 
-						<div class="gif-field gif-hp" aria-hidden="true">
+						<?php
+						// The hiding is inline, not only in the stylesheet. If style.css ever
+						// fails to load, a class-hidden honeypot renders as a visible field --
+						// and anyone who fills it in gets a thank-you while their enquiry is
+						// thrown away. The class is kept for maintenance; the inline rule is
+						// what guarantees it.
+						?>
+						<div class="gif-field gif-hp" aria-hidden="true"
+							style="position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;overflow:hidden!important">
 							<label for="gif_website"><?php esc_html_e( 'Leave this field empty', 'getitframed' ); ?></label>
 							<input type="text" name="gif_website" id="gif_website" tabindex="-1" autocomplete="off">
 						</div>
